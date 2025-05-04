@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom, #87ceeb, #e9f5ff);
+    color: #333;
+    animation: fadeIn 1s ease-in-out;
+    transition: background 1s ease-in-out;
+}
+
+.container {
+    margin: 20px auto;
+    max-width: 500px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out;
+}
+
+.container:hover {
+    transform: scale(1.05);
+}
+
+#map {
+    height: 300px;
+    margin: 20px 0;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+#map:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.weather-info {
+    margin-top: 20px;
+    text-align: left;
+    font-size: 1rem;
+    line-height: 1.5;
+    transition: color 0.3s ease-in-out;
+}
+
+/* Animations for different weather conditions */
+body.sunny {
+    background: linear-gradient(to bottom, #ffdd00, #ff9e00);
+}
+
+body.rainy {
+    background: linear-gradient(to bottom, #4a90e2, #1c3b70);
+    animation: rainEffect 1s infinite;
+}
+
+body.snowy {
+    background: linear-gradient(to bottom, #e0eafc, #cfdef3);
+    animation: snowEffect 1s infinite;
+}
+
+/* Keyframes for rain effect */
+@keyframes rainEffect {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 0 100%;
+    }
+}
+
+/* Keyframes for snow effect */
+@keyframes snowEffect {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 0 100%;
+    }
+}
