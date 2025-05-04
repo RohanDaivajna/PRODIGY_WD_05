@@ -9,13 +9,26 @@
 </head>
 <body>
     <div class="container">
-        <h1>Weather App</h1>
-        <p>Enter a location, use your current location, or select a location on the map:</p>
-        <input type="text" id="locationInput" placeholder="Enter location">
-        <button onclick="getWeatherByInput()">Get Weather</button>
-        <button onclick="getWeatherByLocation()">Use My Location</button>
-        <div id="map"></div>
-        <div class="weather-info" id="weatherInfo"></div>
+        <div class="left-panel">
+            <h1>Weather App</h1>
+            <p>Enter a location, use your current location, or select a location on the map:</p>
+            <input type="text" id="locationInput" placeholder="Enter location">
+            <button onclick="getWeatherByInput()">Get Weather</button>
+            <button onclick="getWeatherByLocation()">Use My Location</button>
+            <div id="map"></div>
+        </div>
+        <div class="right-panel">
+            <div class="current-weather" id="weatherInfo">
+                <h2>Current Weather</h2>
+                <!-- Weather details will be dynamically added here -->
+            </div>
+            <div class="forecast">
+                <h2>5-Day Forecast</h2>
+                <div class="forecast-cards" id="forecastCards">
+                    <!-- Forecast cards will be dynamically added here -->
+                </div>
+            </div>
+        </div>
     </div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>

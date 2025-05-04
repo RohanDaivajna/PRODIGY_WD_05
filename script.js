@@ -1,70 +1,108 @@
-const apiKey = 'b2f8438e094f711cb497fb000733605f'; // Replace with your OpenWeatherMap API key
+// OpenWeatherMap API key (replace with your own API key)
+const API_KEY = 'b2f8438e094f711cb497fb000733605f';
 
-async function fetchWeatherData(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Failed to fetch weather data');
-        }
-        const data = await response.json();
-        displayWeather(data);
-    } catch (error) {
-        document.getElementById('weatherInfo').innerHTML = `<p>Error: ${error.message}</p>`;
+// Initialize the map
+const map = L.map('map').setView([20, 0], 2); // Default view
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+}).addTo(map);
+
+// Add a marker to the map
+let marker;
+map.on('click', function (e) {
+    const { lat, lng } = e.latlng;
+    if (marker) {
+        map.removeLayer(marker);
     }
-}
+    marker = L.marker([lat, lng]).addTo(map);
+    getWeatherByCoordinates(lat, lng);
+});
 
-function displayWeather(data) {
-    const weatherInfo = `
-        <h2>Weather in ${data.name}</h2>
-        <p><strong>Temperature:</strong> ${(data.main.temp - 273.15).toFixed(1)}°C</p>
-        <p><strong>Condition:</strong> ${data.weather[0].description}</p>
-        <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
-        <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
-    `;
-    document.getElementById('weatherInfo').innerHTML = weatherInfo;
-}
-
+// Fetch weather by input location
 function getWeatherByInput() {
     const location = document.getElementById('locationInput').value;
     if (!location) {
         alert('Please enter a location');
         return;
     }
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}`;
-    fetchWeatherData(url);
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${API_KEY}&units=metric`)
+        .then(response => response.json())
+        .then(data => updateWeatherInfo(data))
+        .catch(error => console.error('Error fetching weather data:', error));
 }
 
+// Fetch weather by current location
 function getWeatherByLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            const { latitude, longitude } = position.coords;
-            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`;
-            fetchWeatherData(url);
-        }, () => {
-            alert('Unable to retrieve your location');
-        });
-    } else {
+    if (!navigator.geolocation) {
         alert('Geolocation is not supported by your browser');
+        return;
     }
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            const { latitude, longitude } = position.coords;
+            getWeatherByCoordinates(latitude, longitude);
+        },
+        error => {
+            console.error('Error getting location:', error);
+            alert('Unable to retrieve your location');
+        }
+    );
 }
 
-// Initialize the map
-const map = L.map('map').setView([51.505, -0.09], 5); // Default view
+// Fetch weather by coordinates
+function getWeatherByCoordinates(lat, lon) {
+    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`)
+        .then(response => response.json())
+        .then(data => updateWeatherInfo(data))
+        .catch(error => console.error('Error fetching weather data:', error));
 
-// Add OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+    fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`)
+        .then(response => response.json())
+        .then(data => updateForecast(data))
+        .catch(error => console.error('Error fetching forecast data:', error));
+}
 
-// Add a marker on click and fetch weather data
-map.on('click', function (e) {
-    const { lat, lng } = e.latlng;
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}`;
-    fetchWeatherData(url);
+// Update current weather information
+function updateWeatherInfo(data) {
+    const weatherInfo = document.getElementById('weatherInfo');
+    weatherInfo.innerHTML = `
+        <h2>Current Weather</h2>
+        <p><strong>Location:</strong> ${data.name}</p>
+        <p><strong>Temperature:</strong> ${data.main.temp}°C</p>
+        <p><strong>Weather:</strong> ${data.weather[0].description}</p>
+        <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+        <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
+    `;
+}
 
-    // Add a marker to the map
-    L.marker([lat, lng]).addTo(map)
-        .bindPopup(`Selected Location: ${lat.toFixed(2)}, ${lng.toFixed(2)}`)
-        .openPopup();
-});
+// Update 5-day forecast
+function updateForecast(data) {
+    const forecastCards = document.getElementById('forecastCards');
+    forecastCards.innerHTML = ''; // Clear previous forecast
+
+    // Debugging: Log the forecast data
+    console.log('Forecast data:', data);
+
+    const dailyForecasts = data.list.filter(item => item.dt_txt.includes('12:00:00'));
+    console.log('Filtered daily forecasts:', dailyForecasts);
+
+    if (dailyForecasts.length === 0) {
+        forecastCards.innerHTML = '<p>No forecast data available.</p>';
+        return;
+    }
+
+    dailyForecasts.forEach(forecast => {
+        const date = new Date(forecast.dt_txt).toLocaleDateString();
+        const temp = forecast.main.temp;
+        const description = forecast.weather[0].description;
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <h3>${date}</h3>
+            <p><strong>Temp:</strong> ${temp}°C</p>
+            <p><strong>Weather:</strong> ${description}</p>
+        `;
+        forecastCards.appendChild(card);
+    });
+}
